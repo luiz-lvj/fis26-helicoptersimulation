@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 from matplotlib import pyplot as plt
-from cone import Cone
+from helicopter import Helicopter
 from math import pi
 from constants import *
 
@@ -14,39 +14,44 @@ pygame.display.set_caption('Simulação')
 
 clock = pygame.time.Clock()
 
-pivot = np.array((WIDTH/2, HEIGHT/10))
+pivot = np.array((WIDTH*0.45, HEIGHT*0.75))
 
-cone = Cone(0.75, 16, 47, -200, pivot[1]/4, pivot, 0.0001, -0.001, 0)
+helicopter = Helicopter(18, 37, 4, 22, 3, 23.5, 34, 4.61, pivot ,1.05, 0)
 
 running = True
-lista_fv = []
+tempo = 0
+altura_inicial = 0
+lista_yt = [[tempo, altura_inicial]]
 
 while running:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT or cone.iteracoes >= 800:
+        if event.type == pygame.QUIT or helicopter.iteracoes >= 800:
             running = False
 
     screen.fill(BACKGROUND_COLOR)
 
-    cone.draw(screen)
+    helicopter.draw(screen)
 
     pygame.display.flip()
 
-    lista_fv.append(cone.move())
+    tempo = tempo + helicopter.dtempo
+    altura_atual = lista_yt[-1][1]
+    
+    lista_yt.append(helicopter.moveUp(tempo, altura_atual))
 
     clock.tick(FREQUENCY)
 
 pygame.quit()
 
-forcas = []
-velocidades = []
+alturas = []
+tempos = []
+for item in lista_yt:
+    alturas.append(item[1])
+    tempos.append(item[0])
 
-for item in lista_fv:
-    forcas.append(item[1])
-    velocidades.append(item[0])
 plt.figure(figsize=fig_size)
-plt.plot(velocidades, forcas)
-plt.xlabel('Velocidade')
-plt.ylabel('Força de Resistência')
+plt.plot(tempos, alturas)
+plt.xlabel('Tempo')
+plt.ylabel('Altura')
 plt.savefig('plot.%s'%fig_format, format = fig_format)
 plt.show()
